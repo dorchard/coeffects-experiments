@@ -4,6 +4,9 @@
 
 > data Stream a = Stream (Int -> a) Int
 
+> instance Show a => Show (Stream a) where
+>     show (Stream s c) = show $ map s [0..20]
+
 > instance Comonad Stream where
 >     extract (Stream s c) = s c
 >     extend k (Stream s c) = Stream (\c' -> k (Stream s c')) c
