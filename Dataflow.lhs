@@ -42,7 +42,8 @@
 >                                     . (extend (extract `pair` $(interp e2 vars))) |]  
 
  interp (AppE (AppE (ConE n) e1) e2) = 
- interp (InfixE e1 e2 e3) = 
+
+> interp (UInfixE e1 e2 e3) vars = interp (AppE (AppE e2 e1) e3) vars
 
 > interp (CondE e1 e2 e3) vars   = [| (\d -> if $(return e1) d then $(return e2) d else $(return e3) d) |]
 
