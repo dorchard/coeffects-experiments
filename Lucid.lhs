@@ -33,3 +33,6 @@
 > czip ~(Stream s c, Stream t d) = Stream (\c' -> (s (c' - (f c d) + c), t (c' - (f c d) + d))) (f c d)
 >                                  where f a b = min a b
 >     
+
+> context :: Stream ()
+> context = constant ()

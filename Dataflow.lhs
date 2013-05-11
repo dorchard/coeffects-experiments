@@ -1,6 +1,6 @@
 > {-# LANGUAGE TemplateHaskell #-}
 > 
-> module Dataflow (dataflow, next, prev, constant, fby, czip, Stream, extract, extend) where
+> module Dataflow (dataflow, next, prev, constant, fby, czip, Stream, extract, extend, pair, context) where
 >
 > import Lucid
 
@@ -27,7 +27,7 @@
 >                          --let pos = (loc_filename loc,fst (loc_start loc), snd (loc_start loc))
 >                          case parseExp s of
 >                            Left l -> error l
->                            Right e -> interp e []
+>                            Right e -> interp e [] -- [mkName ""]
 
 > prj 0 = [| snd |]
 > prj n = [| $(prj (n-1)) . fst |]
@@ -43,7 +43,7 @@
 
  interp (AppE (AppE (ConE n) e1) e2) = 
 
-> interp (UInfixE e1 e2 e3) vars = interp (AppE (AppE e2 e1) e3) vars
+> interp (UInfixE e1 e e2) vars = interp (AppE (AppE e e1) e2) vars
 
 > interp (CondE e1 e2 e3) vars   = [| (\d -> if $(return e1) d then $(return e2) d else $(return e3) d) |]
 
@@ -53,11 +53,13 @@
 >                           "fby" -> [| const $(return $ VarE v) |]
 >                           "next" -> [| const $(return $ VarE v) |]
 >                           "prev" -> [| const $(return $ VarE v) |]
+>                           "+"    -> [| const (\x -> \y -> (extract x + extract y)) |]
 >                           _      -> [| $(prj ((length vars) - (fromJust $ elemIndex v vars) - 1)) . extract |]
 
                            "+" ->
                            "*" ->
                            "-" ->
                            "/" -> 
-                           
-> interp _ _ = error "Syntax not allowed"
+
+> interp (ParensE e) vars = [| ($(interp e vars)) |]
+> interp t _ = error $ "Syntax not allowed: " ++ show t
