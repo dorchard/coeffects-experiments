@@ -66,7 +66,7 @@ Interprets a Haskell expression as a comonadic Lucid expression given
            - [Name] (list of locally bound variables)
 
 > interp :: Exp -> [Name] -> Q Exp
-> interp (LitE c) vars          = [| $(return $ LitE c) . iextract |]
+> interp (LitE c) vars          = [| (const $(return $ LitE c)) . iextract |]
 > interp (LamE [VarP n] e) vars = [| curry ($(interp e (vars ++ [n])) . izip) |]
 > interp (AppE e1 e2) vars      = [| (uncurry ($(interp e1 vars))) . iunzip . 
 >                                      (iextend ((iextract >< $(interp e2 vars)) . 
