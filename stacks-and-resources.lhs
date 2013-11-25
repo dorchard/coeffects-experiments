@@ -42,11 +42,10 @@
 
 > instance CZip StackN where
 >     czip (StackN x d, StackN y c) = StackN (x, y) 
->                                      (if (d > c) then d
->                                       else (d + c))
+>                                      (if (d > c) then d else (d + c))
 
 > instance CUnzip StackN where
->     cunzip (StackN (x, y) r) = if (r + 1) > 7 then error "StackN overflow"
+>     cunzip (StackN (x, y) r) = if (r + 1) > 10 then error "StackN overflow"
 >                               else (StackN x (r + 1), StackN y r) -- increment stackN counter
 
 
@@ -77,5 +76,19 @@ Observationall equivalent but different programs
 
 > comonadic [d| sfoop4 = \z -> (\f -> (\s -> f ()) ()) (\x -> (\y -> (\z -> (\w -> stackN) z) y) x) |]
 
+> comonadic [d| sfoop4A = \z -> (\f -> (\s -> f ()) ()) (\x -> (\y -> (\z -> (\w -> (\o -> stackN) w) z) y) x) |]
+
+> comonadic [d| sfoop4B = \z -> (\f -> (\s -> (\t -> f ()) s) ()) (\x -> (\y -> (\z -> (\w -> stackN) z) y) x) |]
+
+
 > comonadic [d| sfoop5 = \z -> (\f -> (\s -> f ()) ()) (\x -> stackN) |]
+
+> comonadic [d| sfoop5A = \z -> (\f -> (\s -> (\w ->  f ()) ()) ()) (\x -> stackN) |]
+
+> comonadic [d| sfoop5B = \z -> (\f -> (\s -> f ()) ()) (\x -> (\y -> stackN) x) |]
+
+
+> comonadic [d| sfoopm = \z -> (\f -> (\x -> stackN) f) ((\x -> (\y -> stackN)) ()) |]
+
+> comonadic [d| sfoopmA = \z -> (\f -> (\x -> stackN) f) (\x -> (\y -> (\z -> (\w -> stackN) z) y) x) |]
 
