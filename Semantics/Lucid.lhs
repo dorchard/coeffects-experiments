@@ -1,4 +1,4 @@
-> module Lucid where
+> module Semantics.Lucid where
 
 > import Control.Comonad
 

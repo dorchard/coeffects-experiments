@@ -1,10 +1,10 @@
 > {-# LANGUAGE TemplateHaskell #-}
 > 
-> module Dataflow ({- export top-level macro -}      dataflow,                  
+> module Semantics.Dataflow ({- export top-level macro -}      dataflow,                  
 >                  {- export Lucid primitives -}     next, prev, constant, fby, 
 >                  {- export semantics primitives -} czip, Stream, extract, extend, context) where
 >
-> import Lucid
+> import Semantics.Lucid
 
 > import Language.Haskell.TH
 > import Language.Haskell.TH.Syntax

@@ -1,10 +1,9 @@
 > {-# LANGUAGE TemplateHaskell, TypeFamilies, KindSignatures, ConstraintKinds,
 >    MultiParamTypeClasses #-}
 > 
-> module Coeffect ({- export top-level macro -}      coeffect,                  
+> module Semantics.Coeffect 
+>                 ({- export top-level macro -}      coeffect,                  
 >                  {- export semantics primitives -} izip, iunzip, iextract, iextend) where
->
-> import Lucid
 
 > import Language.Haskell.TH
 > import Language.Haskell.TH.Syntax
