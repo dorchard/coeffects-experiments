@@ -62,6 +62,8 @@ Interprets a Haskell expression as a comonadic Lucid expression given
 >                                           else return $ VarE v
 
 > interp' (ParensE e) vars       = [| ($(interp' e vars)) |]
+> interp' (ConE name) vars  | nameBase name == "()" 
+>                                = [| const () |]
 > interp' t _                    = error $ "Syntax not allowed: " ++ show t
 
 Computers a projection from an environment (for semantics of variables)

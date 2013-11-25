@@ -31,26 +31,51 @@
 -- can only get this answer out as a value..?
 
 
-> data Stack a = Stack { value :: a, stack :: Int } deriving Show
+> data StackN a = StackN { value :: a, stackN :: Int } deriving Show
 
-> instance Functor Stack where
->     fmap f (Stack x r) = Stack (f x) r
+> instance Functor StackN where
+>     fmap f (StackN x r) = StackN (f x) r
 
-> instance Comonad Stack where
+> instance Comonad StackN where
 >     extract = value
->     extend k (Stack x r) = Stack (k (Stack x r)) r
+>     extend k (StackN x r) = StackN (k (StackN x r)) r
 
-> instance CZip Stack where
->     czip (Stack x r, Stack y s) = Stack (x, y) r -- only care about stack from outer-environment
->                                                  -- not stack usage from inner
-> instance CUnzip Stack where
->     cunzip (Stack (x, y) r) = if (r + 1) > 3 then error "Stack overflow"
->                               else (Stack x (r + 1), Stack y r) -- increment stack counter
+> instance CZip StackN where
+>     czip (StackN x d, StackN y c) = StackN (x, y) 
+>                                      (if (d > c) then d
+>                                       else (d + c))
+
+> instance CUnzip StackN where
+>     cunzip (StackN (x, y) r) = if (r + 1) > 7 then error "StackN overflow"
+>                               else (StackN x (r + 1), StackN y r) -- increment stackN counter
 
 
 Observationall equivalent but different programs
 
-> comonadic [d| sfoo0 = \z -> stack |]
-> comonadic [d| sfoo1 = \z -> (\y -> stack) z |]
-> comonadic [d| sfoo2 = \z -> (\y -> (\z -> stack) y) z |]
+> comonadic [d| sfoo0 = \z -> stackN |]
+> comonadic [d| sfoo1 = \z -> (\y -> stackN) z |]
+> comonadic [d| sfoo2 = \z -> (\y -> (\x -> stackN) y) z |]
+> comonadic [d| sfoo3 = \z -> (\y -> (\x -> (\w -> stackN) x) y) z |]
+
+*Main> sfoo0 (StackN () 0) (StackN 'a' 0)
+0
+*Main> sfoo1 (StackN () 0) (StackN 'a' 0)
+1
+*Main> sfoo2 (StackN () 0) (StackN 'a' 0)
+2
+
+> -- CBN = 3, CBV = 3
+> comonadic [d| sfoopppp = \z -> stackN |]
+> comonadic [d| sfooppp = \z -> (\y -> stackN) () |]
+> comonadic [d| sfoopp = \z -> (\x -> x ()) (\y -> stackN) |]
+> comonadic [d| sfoop = \z -> (\f -> (\x -> x ()) f) (\y -> stackN) |]
+
+> -- CBN = 3, CBV = 
+> comonadic [d| sfoop2 = \z -> (\f -> (\x -> x ()) f) ((\x -> (\y -> stackN)) ()) |]
+
+> comonadic [d| sfoop3 = \z -> (\f -> f ()) (\x -> (\y -> (\z -> stackN) y) x) |]
+
+> comonadic [d| sfoop4 = \z -> (\f -> (\s -> f ()) ()) (\x -> (\y -> (\z -> (\w -> stackN) z) y) x) |]
+
+> comonadic [d| sfoop5 = \z -> (\f -> (\s -> f ()) ()) (\x -> stackN) |]
 
