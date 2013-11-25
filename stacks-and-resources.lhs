@@ -92,3 +92,6 @@ Observationall equivalent but different programs
 
 > comonadic [d| sfoopmA = \z -> (\f -> (\x -> stackN) f) (\x -> (\y -> (\z -> (\w -> stackN) z) y) x) |]
 
+> comonadic [d| nexp = \z -> (\f -> (f ()) ()) (\a -> (\b -> (\c -> (\x -> stackN)) b) a) |]
+
+=== 6 
