@@ -43,12 +43,9 @@
 > instance CZip Stack where
 >     czip (Stack x r, Stack y s) = Stack (x, y) r -- only care about stack from outer-environment
 >                                                  -- not stack usage from inner
-
-if (r + s + 1 > 2) then error "Stack overflow!"
-                               else (Stack (x, y) (r + s + 1))  -- increment stack counter
-
 > instance CUnzip Stack where
->     cunzip (Stack (x, y) r) = (Stack x (r + 1), Stack y r) -- increment stack counter
+>     cunzip (Stack (x, y) r) = if (r + 1) > 3 then error "Stack overflow"
+>                               else (Stack x (r + 1), Stack y r) -- increment stack counter
 
 
 Observationall equivalent but different programs
