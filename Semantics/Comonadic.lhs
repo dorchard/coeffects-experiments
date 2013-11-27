@@ -1,10 +1,11 @@
-> {-# LANGUAGE TemplateHaskell #-}
+> {-# LANGUAGE TemplateHaskell, ImplicitParams #-}
 > 
 > module Semantics.Comonadic where
 >
 > import Control.Comonad.Zip
 
 > import Language.Haskell.TH
+> import Language.Haskell.TH.Ppr
 > import Language.Haskell.TH.Syntax
 > import Control.Comonad
 
@@ -40,8 +41,9 @@ Interprets a Haskell expression as a comonadic Lucid expression given
 
 > interp' :: Exp -> [Name] -> Q Exp
 > interp' (LitE c) vars          = [| const $(return $ LitE c) |]
-> interp' (LamE [VarP n] e) vars = [| curry ($(interp' e (vars ++ [n])) . czip) |]
-> interp' (AppE e1 e2) vars      = [| (uncurry ($(interp' e1 vars))) . cunzip . 
+> interp' s@(LamE [VarP n] e) vars = --[| curry ($(interp' e (vars ++ [n])) . (let dbg = $(return $ LitE $ StringL $ (pprint s)) in czip dbg)) |]
+>                                  [| curry ($(interp' e (vars ++ [n])) . czip) |]   
+> interp' (AppE e1 e2) vars      = [| (uncurry ($(interp' e1 vars))) . $(return $ VarE $ mkName "cunzip") . 
 >                                      (extend (extract `pair` $(interp' e2 vars))) |]  
 
 > interp' (UInfixE e1 e e2) vars = interp' (AppE (AppE e e1) e2) vars

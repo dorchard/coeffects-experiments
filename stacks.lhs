@@ -4,40 +4,7 @@
 > import Control.Comonad
 > import Control.Comonad.Zip 
 
-> import Data.Bits 
-
 > import Debug.Trace
-
-> data Res a = Res { val :: a, res :: Int } deriving Show
-
-> instance Functor Res where
->     fmap f (Res x r) = Res (f x) r
-
-> instance Comonad Res where
->     extract = val 
->     extend k (Res x r) = Res (k (Res x r)) r
-
-> instance CZip Res where
->     czip _ (Res x r, Res y s) = (Res (x, y) (r + s))  -- combines inner and outer parts
-
-> instance CUnzip Res where
->     cunzip (Res (x, y) r) = (Res x (r `div` 2), Res y (r `div` 2)) -- count on application
-
->
-> comonadic [d| foo = \z -> (\x -> (+) (x 2) z) (\y -> (+) y res) |]
-
-> comonadic [d| foo2 = \z -> (\f -> f 2) (\y -> res) |]
-
-> comonadic [d| foo3 = \z -> (\y -> res) () |]
-
-> comonadic [d| foo4 = \z -> res |]
-
-> comonadic [d| foo5 = \z -> ((\x -> (\f -> x) ()) (\f -> res)) () |]
-
-> comonadic [d| foo6 = \z -> ((\x -> x) (\f -> res)) () |]
-
--- can only get this answer out as a value..?
-
 
 > data StackN a = StackN { value :: a, stackN :: Int } deriving Show
 
@@ -61,52 +28,28 @@
 
 
 
-Observationall equivalent but different programs
-
 > comonadic [d| sfoo0 = \z -> stackN |]
 > comonadic [d| sfoo1 = \z -> (\y -> stackN) z |]
 > comonadic [d| sfoo2 = \z -> (\y -> (\x -> stackN) y) z |]
 > comonadic [d| sfoo3 = \z -> (\y -> (\x -> (\w -> stackN) x) y) z |]
 
-*Main> sfoo0 (StackN () 0) (StackN 'a' 0)
-0
-*Main> sfoo1 (StackN () 0) (StackN 'a' 0)
-1
-*Main> sfoo2 (StackN () 0) (StackN 'a' 0)
-2
-
-> -- CBN = 3, CBV = 3
 > comonadic [d| sfoopppp = \z -> stackN |]
 > comonadic [d| sfooppp = \z -> (\y -> stackN) () |]
 > comonadic [d| sfoopp = \z -> (\x -> x ()) (\y -> stackN) |]
 > comonadic [d| sfoop = \z -> (\f -> (\x -> x ()) f) (\y -> stackN) |]
 
-> -- CBN = 3, CBV = 
 > comonadic [d| sfoop2 = \z -> (\f -> (\x -> x ()) f) ((\x -> (\y -> stackN)) ()) |]
-
 > comonadic [d| sfoop3 = \z -> (\f -> f ()) (\x -> (\y -> (\z -> stackN) y) x) |]
-
 > comonadic [d| sfoop4 = \z -> (\f -> (\s -> f ()) ()) (\x -> (\y -> (\z -> (\w -> stackN) z) y) x) |]
-
 > comonadic [d| sfoop4A = \z -> (\f -> (\s -> f ()) ()) (\x -> (\y -> (\z -> (\w -> (\o -> stackN) w) z) y) x) |]
-
 > comonadic [d| sfoop4B = \z -> (\f -> (\s -> (\t -> f ()) s) ()) (\x -> (\y -> (\z -> (\w -> stackN) z) y) x) |]
-
-
 > comonadic [d| sfoop5 = \z -> (\f -> (\s -> f ()) ()) (\x -> stackN) |]
-
 > comonadic [d| sfoop5A = \z -> (\f -> (\s -> (\w ->  f ()) ()) ()) (\x -> stackN) |]
-
 > comonadic [d| sfoop5B = \z -> (\f -> (\s -> f ()) ()) (\x -> (\y -> stackN) x) |]
 
-
 > comonadic [d| sfoopm = \z -> (\f -> (\x -> stackN) f) ((\x -> (\y -> stackN)) ()) |]
-
 > comonadic [d| sfoopmA = \z -> (\f -> (\x -> stackN) f) (\x -> (\y -> (\z -> (\w -> stackN) z) y) x) |]
-
 > comonadic [d| nexp = \z -> (\f -> (f ()) ()) (\a -> (\b -> (\c -> (\x -> stackN)) b) a) |]
-
-=== 6 
 
  (\f -> (f ()) ()) (\a -> (\b -> (\c -> (\x -> stackN)) b) a)
  ((\a -> (\b -> (\c -> (\x -> stackN)) b) a) ()) ()
@@ -115,17 +58,12 @@ Observationall equivalent but different programs
  ((\x -> stackN) ()
  stackN)
 
-
-
 > comonadic [d| mexp = \z -> ((\x -> (\f -> x) ()) (\f -> stackN)) () |] -- Expected depth of 2 (some popping happens)
-
-
-
 > comonadic [d| mexpa = \z -> (((\f -> (\f -> stackN)) ()) ()) |] -- Expected 3
-
 > comonadic [d| oexp = \z -> ((\x -> x) (\f -> stackN)) () |]
-
 > comonadic [d| mexp2 = \z -> (((\x -> (\f -> f)) ()) (\f -> stackN)) () |] -- Expected depth of 4
+> comonadic [d| dexp = \z -> (\f -> f ()) ((\x -> (\y -> (\f -> stackN)) ()) ()) |]
+> comonadic [d| dexpa = \z -> ((\x -> (\f -> stackN)) ()) () |]
 
 > init0 = StackN () 1
 > init1 = StackN 'a' 0
@@ -134,10 +72,6 @@ Observationall equivalent but different programs
 > comonadic [d| betaB = \z -> stackN |]
 > comonadic [d| etaA = \z -> (\x -> stackN) () |]
 > comonadic [d| etaB = \z -> (\w -> (\x -> stackN) w) () |]
-
-> comonadic [d| dexp = \z -> (\f -> f ()) ((\x -> (\y -> (\f -> stackN)) ()) ()) |]
-> comonadic [d| dexpa = \z -> ((\x -> (\f -> stackN)) ()) () |]
-
 
 > comonadic [d| big = \z -> (\a -> ((\f -> f ()) ((\x -> (\y -> (\f -> stackN)) ()) ()))) () |]
 
@@ -164,7 +98,7 @@ beta-redux and eta-exp respectively decrease and increase the stack depth
 >          ("nexp", 6, nexp),
 >          ("mexp", 2, mexp),
 >          ("mexpa", 2, mexp),
->          ("oexp", 2, oexp), -- could be 3 or 2?
+>          ("oexp", 2, oexp),
 >          ("dexp", 5, dexp),
 >          ("dexpa", 3, dexpa),
 >          ("betaA", 2, betaA),
