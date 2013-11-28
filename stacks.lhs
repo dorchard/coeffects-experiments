@@ -16,7 +16,7 @@
 >     extend k (StackN x r) = StackN (k (StackN x r)) r
 
 > instance CZip StackN where
->     czip dbg (StackN x d, StackN y c) = -- (dbg ++ "\n call - " ++ show c ++ "\n def - " ++ show d ++ "\n") `trace`
+>     czip (StackN x d, StackN y c) = -- (dbg ++ "\n call - " ++ show c ++ "\n def - " ++ show d ++ "\n") `trace`
 >                                         StackN (x, y) (c + d) 
 
 > instance CUnzip StackN where -- ("app - " ++ show r ++ "\n") `trace` 
@@ -65,6 +65,10 @@
 > comonadic [d| dexp = \z -> (\f -> f ()) ((\x -> (\y -> (\f -> stackN)) ()) ()) |]
 > comonadic [d| dexpa = \z -> ((\x -> (\f -> stackN)) ()) () |]
 
+> comonadic [d| exm = \z -> ((\f ->(\x -> f ())) (\x -> stackN)) () |]
+
+
+
 > init0 = StackN () 1
 > init1 = StackN 'a' 0
 
@@ -99,12 +103,14 @@ beta-redux and eta-exp respectively decrease and increase the stack depth
 >          ("mexp", 2, mexp),
 >          ("mexpa", 2, mexp),
 >          ("oexp", 2, oexp),
+>          ("mexp2", 2, mexp2), 
 >          ("dexp", 5, dexp),
 >          ("dexpa", 3, dexpa),
 >          ("betaA", 2, betaA),
 >          ("betaB", 1, betaB),
 >          ("etaA", 2, etaA),
->          ("etaB", 3, etaB)]
+>          ("etaB", 3, etaB),
+>          ("exm", 4, exm)]
 
 > doTests = let xs = map (\(n, val, f) -> (n, val, f init0 init1, val == (f init0 init1))) tests
 >           in (foldl (\r (_, _, _, p) -> r && p) True xs, xs)
