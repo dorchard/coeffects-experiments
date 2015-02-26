@@ -63,50 +63,144 @@
 
 Observationall equivalent but different programs
 
+
+> comonadic [d| beta0 = \z -> stackN |]
+> comonadic [d| beta1 = (\x -> (\z -> stackN)) () |]
+> comonadic [d| eta = (\x -> (\y -> (\z -> stackN) y)) () |]
+
+
+> tests2 = [("beta0", 1, beta0), ("beta1", 2, beta1), ("eta", 3, eta)]
+
+> doTests2 = let init1 = StackN () 1
+>                init2 = StackN 'a' 0
+>                xs = map (\(n, val, f) -> (n, val, f init1 init2, (f init1 init2) == val)) tests2
+>            in (foldl (\r (_, _, _, y) -> y && r) True xs, xs)
+
+> comonadic [d| beta0a = (\z -> stackN) () |]
+> comonadic [d| beta1b = ((\x -> (\z -> stackN)) ()) () |]
+> comonadic [d| etac = ((\x -> (\y -> (\z -> stackN) y)) ()) () |]
+
+
+> tests3 = [("beta0a", 1, beta0a), ("beta1b", 2, beta1b), ("etac", 3, etac)]
+
+> doTests3 = let init1 = StackN () 19
+>                xs = map (\(n, val, f) -> (n, val, f init1, (f init1) == val)) tests3
+>            in (foldl (\r (_, _, _, y) -> y && r) True xs, xs)
+
+
+
+
 > comonadic [d| sfoo0 = \z -> stackN |]
 > comonadic [d| sfoo1 = \z -> (\y -> stackN) z |]
 > comonadic [d| sfoo2 = \z -> (\y -> (\x -> stackN) y) z |]
 > comonadic [d| sfoo3 = \z -> (\y -> (\x -> (\w -> stackN) x) y) z |]
 
-*Main> sfoo0 (StackN () 0) (StackN 'a' 0)
-0
-*Main> sfoo1 (StackN () 0) (StackN 'a' 0)
-1
-*Main> sfoo2 (StackN () 0) (StackN 'a' 0)
-2
-
-> -- CBN = 3, CBV = 3
-> comonadic [d| sfoopppp = \z -> stackN |]
-> comonadic [d| sfooppp = \z -> (\y -> stackN) () |]
-> comonadic [d| sfoopp = \z -> (\x -> x ()) (\y -> stackN) |]
 > comonadic [d| sfoop = \z -> (\f -> (\x -> x ()) f) (\y -> stackN) |]
+> comonadic [d| sfoopp = \z -> (\x -> x ()) (\y -> stackN) |]
+> comonadic [d| sfooppp = \z -> (\y -> stackN) () |]
+> comonadic [d| sfoopppp = \z -> stackN |]
 
 > -- CBN = 3, CBV = 
 > comonadic [d| sfoop2 = \z -> (\f -> (\x -> x ()) f) ((\x -> (\y -> stackN)) ()) |]
-
 > comonadic [d| sfoop3 = \z -> (\f -> f ()) (\x -> (\y -> (\z -> stackN) y) x) |]
-
 > comonadic [d| sfoop4 = \z -> (\f -> (\s -> f ()) ()) (\x -> (\y -> (\z -> (\w -> stackN) z) y) x) |]
-
 > comonadic [d| sfoop4A = \z -> (\f -> (\s -> f ()) ()) (\x -> (\y -> (\z -> (\w -> (\o -> stackN) w) z) y) x) |]
-
 > comonadic [d| sfoop4B = \z -> (\f -> (\s -> (\t -> f ()) s) ()) (\x -> (\y -> (\z -> (\w -> stackN) z) y) x) |]
 
-
 > comonadic [d| sfoop5 = \z -> (\f -> (\s -> f ()) ()) (\x -> stackN) |]
-
 > comonadic [d| sfoop5A = \z -> (\f -> (\s -> (\w ->  f ()) ()) ()) (\x -> stackN) |]
-
 > comonadic [d| sfoop5B = \z -> (\f -> (\s -> f ()) ()) (\x -> (\y -> stackN) x) |]
 
-
 > comonadic [d| sfoopm = \z -> (\f -> (\x -> stackN) f) ((\x -> (\y -> stackN)) ()) |]
-
 > comonadic [d| sfoopmA = \z -> (\f -> (\x -> stackN) f) (\x -> (\y -> (\z -> (\w -> stackN) z) y) x) |]
-
 > comonadic [d| nexp = \z -> (\f -> (f ()) ()) (\a -> (\b -> (\c -> (\x -> stackN)) b) a) |]
+> comonadic [d| nexpA = \z -> (\f -> f ()) (\a -> (\b -> (\x -> stackN) b) a) |]
+> comonadic [d| nexpC = \z -> ((\f -> (f ())) (\a -> (\b -> (\c -> (\x -> stackN)) b) a)) () |]
 
-=== 6 
+> comonadic [d| mexp = \z -> ((\x -> (\y -> x) ()) (\f -> stackN)) () |]
+> comonadic [d| mexpp = \z -> ((\y -> (\f -> stackN)) ()) () |]
+> comonadic [d| mexppp = \z -> (\f -> stackN) () |]
+
+> comonadic [d| mexpH = \z -> ((\x -> (\y -> (\z -> x) ()) ()) (\f -> stackN)) () |]
+
+
+> tests = [("sfoo0", 1, sfoo0),
+>          ("sfoo1", 2, sfoo1),
+>          ("sfoo2", 3, sfoo2),
+>          ("sfoo3", 4, sfoo3), 
+>          ("sfoop", 4, sfoop), 
+>          ("sfoopp", 3, sfoopp),
+>          ("sfooppp", 2, sfooppp),
+>          ("sfoopppp", 1, sfoopppp),
+>          ("sfoop2", 5, sfoop2),
+>          ("sfoop3", 5, sfoop3),
+>          ("sfoop4", 7, sfoop4),
+>          ("sfoop4A", 8, sfoop4A),
+>          ("sfoop4B", 8, sfoop4B),
+>          ("sfoop5", 4, sfoop5),
+>          ("sfoop5A", 5, sfoop5A), 
+>          ("sfoop5B", 5, sfoop5B), 
+>          ("sfoopm", 3, sfoopm), 
+>          ("sfoopmA", 3, sfoopmA), 
+>          ("nexp", 6, nexp), 
+>          ("nexpA", 5, nexpA), 
+>          ("nexpC", 6, nexpC),
+>          ("mexp", 4, mexp),
+>          ("mexpp", 3, mexpp),
+>          ("mexppp", 2, mexppp),
+>          ("mexpH", 5, mexpH)]
+
+> testsV = [("sfoo0", 1, sfoo0),
+>          ("sfoo1", 2, sfoo1),
+>          ("sfoo2", 3, sfoo2),
+>          ("sfoo3", 4, sfoo3), 
+>          ("sfoop", 4, sfoop), 
+>          ("sfoopp", 3, sfoopp),
+>          ("sfooppp", 2, sfooppp),
+>          ("sfoopppp", 1, sfoopppp),
+>          ("sfoop2", 4, sfoop2),
+>          ("sfoop3", 5, sfoop3),
+>          ("sfoop4", 7, sfoop4),
+>          ("sfoop4A", 8, sfoop4A),
+>          ("sfoop4B", 8, sfoop4B),
+>          ("sfoop5", 4, sfoop5),
+>          ("sfoop5A", 5, sfoop5A), 
+>          ("sfoop5B", 5, sfoop5B), 
+>          ("sfoopm", 3, sfoopm), 
+>          ("sfoopmA", 3, sfoopmA), 
+>          ("nexp", 6, nexp), 
+>          ("nexpA", 5, nexpA), 
+>          ("nexpC", 6, nexpC),
+>          ("mexp", 4, mexp),
+>          ("mexpp", 3, mexpp),
+>          ("mexppp", 2, mexppp)]
+
+> doTests = let init1 = StackN () 1
+>               init2 = StackN 'a' 0
+>               xs = map (\(n, val, f) -> (n, val, f init1 init2, (f init1 init2) == val)) tests
+>           in (foldl (\r (_, _, _, y) -> y && r) True xs, xs)
+
+All true (NOT FOR mexp!)
+
+ czip (StackN x d, StackN y c) = StackN (x, y) (d + c)
+ cunzip (StackN (x, y) r) = (StackN x 1, StackN y r) 
+
+Mostly false for
+
+ czip (StackN x d, StackN y c) = StackN (x, y) (d + c)
+ cunzip (StackN (x, y) r) = (StackN x (r+1), StackN y r) 
+
+Mostly true (except for last one!)
+
+ czip (StackN x d, StackN y c) = StackN (x, y) (if (d > c) then d else (d + c))
+ cunzip (StackN (x, y) r) = (StackN x (r+1), StackN y r) 
+
+Mostly false for
+
+ czip (StackN x d, StackN y c) = StackN (x, y) (if (d > c) then d else (d + c))
+ cunzip (StackN (x, y) r) = (StackN x 1, StackN y r) 
+
+
 
  (\f -> (f ()) ()) (\a -> (\b -> (\c -> (\x -> stackN)) b) a)
  ((\a -> (\b -> (\c -> (\x -> stackN)) b) a) ()) ()
